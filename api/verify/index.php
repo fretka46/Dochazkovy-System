@@ -16,22 +16,18 @@ if (!isset($_POST["card_code"])) {
 
 $card_code = $_POST["card_code"];
 
-$databaseResponse = UpdateTeacherStatus($card_code);
+// Verify the card
+// null = invalid, true = Arrival, false = Farewell
+$isArrival = UpdateTeacherStatus($card_code);
 
-if ($databaseResponse === null) {
+if ($isArrival === null) {
     http_response_code(400);
-    die("Access denied");
+    die(json_encode(["code" => 400 ,"error" => "Unathorized"]));
 }
 
-// TODO: Complete this
 // Make record into the database
-CreateLog($card_code);
+CreateLog($card_code, $isArrival);
 
-// Update teacher status
-if ($databaseResponse) {
-    http_response_code(200);
-    echo("Success");
-} else {
-    http_response_code(400);
-    echo("Access denied");
-}
+// Give response
+http_response_code(200);
+echo(json_encode( ["code" => 200, 'isArrival' => $isArrival] ));

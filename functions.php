@@ -20,7 +20,8 @@ function GetTeacherStatus(): array {
 
 
 
-// Updates status and returns true if teacher is present, false if teacher is absent, null if access is denied
+// Updates status and returns value based on the teacher is_present
+// null = invalid, true = Arrival, false = Farewell
 function UpdateTeacherStatus(string $card) : ?bool {
     global $conn;
 
@@ -47,10 +48,10 @@ function UpdateTeacherStatus(string $card) : ?bool {
     return !$is_present;
 }
 
-function CreateLog(string $card) {
+function CreateLog(string $card, bool $is_arrival = false) {
     global $conn;
-    $stmt = $conn->prepare("INSERT INTO access_log (card_id) VALUES (?)");
-    $stmt->bind_param("s", $card);
+    $stmt = $conn->prepare("INSERT INTO access_log (card_id, is_arrival) VALUES (?, ?)");
+    $stmt->bind_param("sb", $card, $is_arrival);
     $stmt->execute();
     $stmt->close();
 }
