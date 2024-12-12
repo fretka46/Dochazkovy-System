@@ -22,7 +22,7 @@ $isArrival = UpdateTeacherStatus($card_code);
 
 if ($isArrival === null) {
     http_response_code(400);
-    die(json_encode(["code" => 400 ,"error" => "Unathorized"]));
+    die(json_encode(["code" => 400 ,"error" => "Unathorized", "given" => $card_code]));
 }
 
 // Make record into the database
