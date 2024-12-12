@@ -19,7 +19,7 @@ AsyncHTTPRequest request;
 String originalContent;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(250000);
   SPI.begin();
   mfrc522.PCD_Init();
   Serial.println("Scan a RFID card");
@@ -94,6 +94,48 @@ void sendPostRequest(const char* url, const String& content) {
   }
 }
 
+void GoodBeep(bool isLeave = false) {
+  if (isLeave) {
+    tone(Buzzer, 3500, 50);
+    MilisWait(60);
+    tone(Buzzer, 3000, 50);
+    MilisWait(60);
+    tone(Buzzer, 2500, 100);
+  } else {
+    tone(Buzzer, 2500, 50);
+    MilisWait(60);
+    tone(Buzzer, 3000, 50);
+    MilisWait(60);
+    tone(Buzzer, 3500, 100);
+  }
+}
+
+void BadBeep() {
+  tone(Buzzer, 3000, 450);
+  MilisWait(500);
+  tone(Buzzer, 3000, 450);
+  MilisWait(500);
+  tone(Buzzer, 3000, 450);
+}
+
+void ErrorBeep() {
+  tone(Buzzer, 5000, 450);
+  MilisWait(500);
+  tone(Buzzer, 5000, 450);
+  MilisWait(500);
+  tone(Buzzer, 5000, 450);
+  MilisWait(500);
+  tone(Buzzer, 5000, 450);
+  MilisWait(500);
+  tone(Buzzer, 5000, 450);
+}
+
+void MilisWait(long delay) {
+  long start = millis();
+  while (millis() - start < delay) {
+  }
+}
+
 void requestCallback(void* optParm, AsyncHTTPRequest* request, int readyState) {
   if (readyState == readyStateDone) {
     Serial.print("Ready State: ");
@@ -101,33 +143,27 @@ void requestCallback(void* optParm, AsyncHTTPRequest* request, int readyState) {
     Serial.print("HTTP Code: ");
     Serial.println(request->responseHTTPcode());
     Serial.print("Response Text: ");
-    Serial.println(request->responseText());
+    String responseText = request->responseText();
+    Serial.println(responseText);
 
     if (request->responseHTTPcode() == 200) {
-      Serial.println("Opening door");
-      digitalWrite(openDoor, HIGH);
-      lastOpenTime = millis();
-
-      // Good beep
-      tone(Buzzer, 1000);
-      delay(500);
-      tone(Buzzer, 1500, 500);
+      if (responseText.indexOf("true") != -1) {
+        Serial.println("Opening door");
+        digitalWrite(openDoor, HIGH);
+        lastOpenTime = millis();
+        GoodBeep();
+      } else {
+        Serial.println("Teacher leaves, not opening door");
+        GoodBeep(true);
+      }
 
     } else if (request->responseHTTPcode() == 401) {
       Serial.print("Received invalid card");
-      // Bad beep
-      tone(Buzzer, 500);
-      delay(500);
-      tone(Buzzer, 250, 500);
+      BadBeep();
+
     } else {
       Serial.println("Unknown error");
-
-      // Error beep
-      tone(Buzzer, 500, 450);
-      delay(500);
-      tone(Buzzer, 500, 450);
-      delay(500);
-      tone(Buzzer, 500, 450);
+      ErrorBeep();
     }
   }
 }
