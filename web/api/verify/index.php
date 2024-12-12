@@ -21,8 +21,8 @@ $card_code = $_POST["card_code"];
 $isArrival = UpdateTeacherStatus($card_code);
 
 if ($isArrival === null) {
-    http_response_code(400);
-    die(json_encode(["code" => 400 ,"error" => "Unathorized", "given" => $card_code]));
+    http_response_code(401);
+    die(json_encode(["code" => 401 ,"error" => "Unathorized", "given" => $card_code]));
 }
 
 // Make record into the database

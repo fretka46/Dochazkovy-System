@@ -3,20 +3,24 @@
 #include <ESP8266WiFi.h>
 #include <AsyncHTTPRequest_Generic.h>
 
-#define SS_PIN D2
+#define openDoor D0
 #define RST_PIN D1
+#define SS_PIN D2
+#define Buzzer D3
 
 const char* ssid = "SPSD-B102";
 const char* password = "MilujuMatematiku";
 const char* serverName = "http://mujweb.spsdmasna.cz/vondra121/dochsys/web/api/verify/index.php";
 
-MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
+long lastOpenTime = 0;
+
+MFRC522 mfrc522(SS_PIN, RST_PIN);
 AsyncHTTPRequest request;
 String originalContent;
 
 void setup() {
-  Serial.begin(9600);  // Initialize serial communications with the PC
-  SPI.begin();         // Init SPI bus
+  Serial.begin(9600);
+  SPI.begin();
   mfrc522.PCD_Init();
   Serial.println("Scan a RFID card");
 
@@ -30,9 +34,17 @@ void setup() {
 
   // Setup request callback
   request.onReadyStateChange(requestCallback);
+
+  // Setup open door pin
+  pinMode(openDoor, OUTPUT);
+  digitalWrite(openDoor, LOW);
 }
 
 void loop() {
+  if (millis() - lastOpenTime > 5000) {
+    digitalWrite(openDoor, LOW);
+  }
+
   // Look for new cards
   if (!mfrc522.PICC_IsNewCardPresent()) {
     return;
@@ -92,11 +104,30 @@ void requestCallback(void* optParm, AsyncHTTPRequest* request, int readyState) {
     Serial.println(request->responseText());
 
     if (request->responseHTTPcode() == 200) {
-      Serial.println("POST request sent successfully");
-      Serial.println(request->responseText());
+      Serial.println("Opening door");
+      digitalWrite(openDoor, HIGH);
+      lastOpenTime = millis();
+
+      // Good beep
+      tone(Buzzer, 1000);
+      delay(500);
+      tone(Buzzer, 1500, 500);
+
+    } else if (request->responseHTTPcode() == 401) {
+      Serial.print("Received invalid card");
+      // Bad beep
+      tone(Buzzer, 500);
+      delay(500);
+      tone(Buzzer, 250, 500);
     } else {
-      Serial.print("Error on sending POST: ");
-      Serial.println(request->responseHTTPcode());
+      Serial.println("Unknown error");
+
+      // Error beep
+      tone(Buzzer, 500, 450);
+      delay(500);
+      tone(Buzzer, 500, 450);
+      delay(500);
+      tone(Buzzer, 500, 450);
     }
   }
 }
