@@ -25,9 +25,9 @@ if ($isArrival === null) {
     die(json_encode(["code" => 401 ,"error" => "Unathorized", "given" => $card_code]));
 }
 
-// Make record into the database
-CreateLog($card_code, $isArrival);
-
 // Give response
 http_response_code(200);
 echo(json_encode( ["code" => 200, 'isArrival' => $isArrival] ));
+
+// Make record into the database
+CreateLog($card_code, $isArrival);

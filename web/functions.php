@@ -51,7 +51,9 @@ function UpdateTeacherStatus(string $card) : ?bool {
 function CreateLog(string $card, bool $is_arrival = false) {
     global $conn;
     $stmt = $conn->prepare("INSERT INTO access_log (card_id, is_arrival) VALUES (?, ?)");
-    $stmt->bind_param("sb", $card, $is_arrival);
+
+    $is_arrival_int = $is_arrival ? 1 : 0;
+    $stmt->bind_param("si", $card, $is_arrival_int);
     $stmt->execute();
     $stmt->close();
 }
