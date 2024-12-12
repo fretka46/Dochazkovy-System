@@ -38,6 +38,8 @@ void setup() {
   // Setup open door pin
   pinMode(openDoor, OUTPUT);
   digitalWrite(openDoor, LOW);
+
+  ReadyBeep();
 }
 
 void loop() {
@@ -128,6 +130,14 @@ void ErrorBeep() {
   tone(Buzzer, 5000, 450);
   MilisWait(500);
   tone(Buzzer, 5000, 450);
+}
+
+void ReadyBeep() {
+  tone(Buzzer, 2500, 100);
+  MilisWait(110);
+  tone(Buzzer, 2500, 100);
+  MilisWait(110);
+  tone(Buzzer, 3500, 100);
 }
 
 void MilisWait(long delay) {
