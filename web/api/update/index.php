@@ -8,5 +8,5 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
     die("Invalid request method");
 }
 
-echo json_encode(GetTeacherStatus());
+echo json_encode(GetTeacherStatus(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 http_response_code(200);
