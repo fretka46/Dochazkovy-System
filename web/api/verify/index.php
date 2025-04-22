@@ -1,5 +1,7 @@
 <?php
 // File that checks the user's card code and updates is_present in tabase
+// Returns 200 if the card code is valid
+// Returns 401 if the card code doesn't match any teacher
 
 require "../../functions.php";
 
